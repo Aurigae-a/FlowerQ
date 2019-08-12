@@ -1,6 +1,6 @@
 # FlowerQ
 A Qt application for dividing the bills among roommates. 
 
-version:t0.1
+version:beta 1.0
 
-date:Aug 8, 2019
+date:Aug 11, 2019
