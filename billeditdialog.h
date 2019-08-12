@@ -53,7 +53,10 @@ public:
     void addSubBill();
     void deleteSubBill();
     void changeSubBill();
-    float calculateRemained();
+    void defaultCalculate(double, CheckBoxList*);
+    void paidDefault();
+    void owedDefault();
+    double calculateRemained();
     bool checkPaid();
     bool checkOwed();
 

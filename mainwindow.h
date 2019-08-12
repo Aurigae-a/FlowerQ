@@ -11,9 +11,13 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QCloseEvent>
 #include "account.h"
 #include "bill.h"
 #include "billeditdialog.h"
+#include "databasepathdialog.h"
+#include "savedialog.h"
+#include "calculatedialog.h"
 
 
 class MainWindow : public QMainWindow
@@ -22,15 +26,13 @@ class MainWindow : public QMainWindow
 
 public:
 
-    QString  AccountFileAddress, OBillFileAddress, SBillFileAddress;
     Account  *current_account;
     Bill     *current_bill;
-    int      BillStartNumber;
-    OneBill  *bill_start, *bill_end;
+    QString billSavingPath, obName, sbName, accountSavingPath, acName;
 
     QMenuBar *pMenuBar;
     QMenu    *pMenu1_File, *pMenu1_Account, *pMenu1_Help;
-    QAction  *pOpen,       *pAccount,       *pVersion;
+    QAction  *pAccount, *pVersion, *pNewAccount, *pNewBill, *pSaveAccount, *pSaveAsAccount, *pSaveBill, *pSaveAsBill;
 
     QWidget *CenterWindow;
     QPushButton   b1,  b2, b3, b4, b5;
@@ -40,18 +42,27 @@ public:
 
     BillEditDialog *dlg1;
 
-    MainWindow(QWidget *parent = 0);
+    bool accountChanged, billChanged;
+
+    MainWindow(QWidget *parent = nullptr);
 
     void accountExec();
-    void readBasicInfo(QString);
     void clearTable(QTableWidget*);
     void updateBillTable();
     void updateAccountTable();
     void newBillExec();
     void deleteBillExec();
     void changeBillExec();
-    void calculateTotal(OneBill*, OneBill*);
-    void billStartEnd();
+    void calculateTotal();
+    void closeEvent(QCloseEvent*);
+    int accountSaveAs();
+    int accountSave();
+    int billSaveAs();
+    int billSave();
+    void newOpenAccount();
+    void newOpenBill();
+    void calculateExec();
+    void clearExec();
 
     ~MainWindow();
 

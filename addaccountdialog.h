@@ -6,6 +6,9 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QMessageBox>
 #include "account.h"
 
 
@@ -18,18 +21,17 @@ public:
     QLabel        l1,  l2;
     QGridLayout *ly1;
     QPushButton   b1,  b2;
+    QButtonGroup  g1;
+    QRadioButton  r1, r2;
 
-    int     command, Number;
-    QString Name;
+    User *tempUser;
 
     void AcceptExec();
     void CancelExec();
+    void statusChanged();
 
-    AddAccountDialog(int, int, QString);
+    AddAccountDialog(User*);
     ~AddAccountDialog();
-
-signals:
-    void addInfo(QString);
 };
 
 #endif // ADDACCOUNTDIALOG_H

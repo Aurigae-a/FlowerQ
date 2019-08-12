@@ -7,10 +7,10 @@ BillEditDialog::BillEditDialog(OneBill *input_bill, Account *input_account, Bill
     account      = input_account;
     current_bill = input_bill_book;
 
-    head1             = NULL;
-    tail1             = NULL;
-    head2             = NULL;
-    tail2             = NULL;
+    head1             = nullptr;
+    tail1             = nullptr;
+    head2             = nullptr;
+    tail2             = nullptr;
 
     createItems();
     adjustToBillData();
@@ -19,7 +19,8 @@ BillEditDialog::BillEditDialog(OneBill *input_bill, Account *input_account, Bill
     connect(&e4, &QLineEdit::editingFinished, this, &BillEditDialog::slotMoneyEdit);
     connect(&b1, &QPushButton::clicked, this, &BillEditDialog::AcceptExec);
     connect(&b2, &QPushButton::clicked, this, &BillEditDialog::CancelExec);
-    //connect(&b3, &QPushButton::clicked, this, &BillEditDialog::);
+    connect(&b3, &QPushButton::clicked, this, &BillEditDialog::paidDefault);
+    connect(&b4, &QPushButton::clicked, this, &BillEditDialog::owedDefault);
     connect(&b5, &QPushButton::clicked, this, &BillEditDialog::addSubBill);
     connect(&b6, &QPushButton::clicked, this, &BillEditDialog::deleteSubBill);
     connect(&b7, &QPushButton::clicked, this, &BillEditDialog::changeSubBill);
@@ -28,8 +29,6 @@ BillEditDialog::BillEditDialog(OneBill *input_bill, Account *input_account, Bill
 
 BillEditDialog::~BillEditDialog()
 {
-//    qDebug() << "Shit!";
-
     clearTable();
     delete t1;
 
@@ -45,7 +44,7 @@ BillEditDialog::~BillEditDialog()
 
 void BillEditDialog::AcceptExec()
 {
-    Divider      *temp1, *temp4;
+    Divider      *temp1, *temp4=nullptr;
     CheckBoxList *temp2;
     User         *temp3;
 
@@ -64,22 +63,24 @@ void BillEditDialog::AcceptExec()
     else{
         object_bill->Time  = e2.text().toInt();
         object_bill->Item  = e3.text();
-        object_bill->Money = e4.text().toFloat();
+        object_bill->Money = e4.text().toDouble();
 
-        for (temp1=object_bill->PaidHeader; temp1!=NULL; ){
+        for (temp1=object_bill->PaidHeader; temp1!=nullptr; ){
             temp4 = temp1;
             temp1 = temp1->next;
             delete temp4;
         }
-        object_bill->PaidHeader = NULL;
-        for (temp2=head1, temp3=account->head; temp2!=NULL; temp2=temp2->next, temp3=temp3->next){
+        object_bill->PaidHeader = nullptr;
+        for (temp2=head1, temp3=account->head; temp2!=nullptr; temp3=temp3->next){
+            if (temp3->isFreezed)       continue;
+
             if (temp2->box_state == true){
                 temp1         = new Divider;
                 temp1->People = temp3->Number;
-                temp1->Money  = temp2->edit->text().toFloat();
-                temp1->next   = NULL;
+                temp1->Money  = temp2->edit->text().toDouble();
+                temp1->next   = nullptr;
 
-                if (object_bill->PaidHeader == NULL){
+                if (object_bill->PaidHeader == nullptr){
                     object_bill->PaidHeader = temp1;
                     temp4                   = temp1;
                 }
@@ -88,23 +89,26 @@ void BillEditDialog::AcceptExec()
                     temp4                   = temp1;
                 }
             }
-        }
-//        qDebug() << "Fucker";
 
-        for (temp1=object_bill->OwedHeader; temp1!=NULL; ){
+            temp2=temp2->next;
+        }
+
+        for (temp1=object_bill->OwedHeader; temp1!=nullptr; ){
             temp4 = temp1;
             temp1 = temp1->next;
             delete temp4;
         }
-        object_bill->OwedHeader = NULL;
-        for (temp2=head2, temp3=account->head; temp2!=NULL; temp2=temp2->next, temp3=temp3->next){
+        object_bill->OwedHeader = nullptr;
+        for (temp2=head2, temp3=account->head; temp2!=nullptr; temp3=temp3->next){
+            if (temp3->isFreezed)       continue;
+
             if (temp2->box_state == true){
                 temp1         = new Divider;
                 temp1->People = temp3->Number;
-                temp1->Money  = temp2->edit->text().toFloat();
-                temp1->next   = NULL;
+                temp1->Money  = temp2->edit->text().toDouble();
+                temp1->next   = nullptr;
 
-                if (object_bill->OwedHeader == NULL){
+                if (object_bill->OwedHeader == nullptr){
                     object_bill->OwedHeader = temp1;
                     temp4                   = temp1;
                 }
@@ -113,8 +117,9 @@ void BillEditDialog::AcceptExec()
                     temp4                   = temp1;
                 }
             }
+
+            temp2=temp2->next;
         }
-//        qDebug() << "Mother";
 
         done(QDialog::Accepted);
     }
@@ -135,15 +140,17 @@ void BillEditDialog::newCheckBox(CheckBoxList* &head, CheckBoxList* &tail, QGrid
     int          m1;
 
     // create a check box and an editor for each account
-    for (temp2=account->head, m1=0; temp2!=NULL; temp2=temp2->next, m1++){
+    for (temp2=account->head, m1=0; temp2!=nullptr; temp2=temp2->next, m1++){
+        if (temp2->isFreezed)       continue;
+
         temp1 = new CheckBoxList;
-        if (head == NULL) {
-            temp1->next = NULL;
+        if (head == nullptr) {
+            temp1->next = nullptr;
             head        = temp1;
             tail        = temp1;
         }
         else{
-            temp1->next = NULL;
+            temp1->next = nullptr;
             tail->next  = temp1;
             tail        = temp1;
         }
@@ -164,7 +171,7 @@ void BillEditDialog::deleteCheckBox(CheckBoxList* &head, CheckBoxList* &tail)
     // disconnect the checkboxes with their slot function
     connectingCheckBox(false, head);
 
-    for (temp1=head; temp1!=NULL;){
+    for (temp1=head; temp1!=nullptr;){
         temp2 = temp1;
         delete temp2->box;
         delete temp2->edit;
@@ -172,12 +179,12 @@ void BillEditDialog::deleteCheckBox(CheckBoxList* &head, CheckBoxList* &tail)
         delete temp2;
     }
 
-    head = NULL;
-    tail = NULL;
+    head = nullptr;
+    tail = nullptr;
 }
 
 
-void BillEditDialog::slotCheckBox(int signal_state)
+void BillEditDialog::slotCheckBox(int)
 {
     updateCheckBox(head1);
     updateCheckBox(head2);
@@ -189,7 +196,7 @@ void BillEditDialog::updateCheckBox(CheckBoxList *head)
 {
     CheckBoxList *temp1;
 
-    for (temp1=head; temp1!=NULL; temp1=temp1->next){
+    for (temp1=head; temp1!=nullptr; temp1=temp1->next){
         if (temp1->box->checkState() == Qt::Checked){
             temp1->edit->setEnabled(true);
             temp1->box_state = true;
@@ -221,8 +228,6 @@ void BillEditDialog::createItems()
 
     newCheckBox(head1, tail1, ly2);
     newCheckBox(head2, tail2, ly3);
-
-//    qDebug() << head1;
 
     l1.setText("NO.");
     l2.setText("Time");
@@ -312,7 +317,7 @@ void BillEditDialog::adjustToBillData()
     User            *temp3;
     OneBill         *temp5;
     int             count, m1;
-    float           remained;
+    double          remained;
 
     QTableWidgetItem *it;
 
@@ -322,17 +327,21 @@ void BillEditDialog::adjustToBillData()
     e4.setText(QString::number(object_bill->Money));
 
     // record the paid info to the CheckBoxList
-    for (temp1=object_bill->PaidHeader; temp1!=NULL; temp1=temp1->next){
-        for (temp2=head1, temp3=account->head; temp3!=NULL; temp2=temp2->next, temp3=temp3->next){
+    for (temp1=object_bill->PaidHeader; temp1!=nullptr; temp1=temp1->next){
+        for (temp2=head1, temp3=account->head; temp3!=nullptr; temp3=temp3->next){
+            if (temp3->isFreezed)       continue;
+
             if (temp3->Number == temp1->People){
                 temp2->box_state = true;
                 temp2->edit->setText(QString::number(temp1->Money));
                 break;
             }
+
+            temp2 = temp2->next;
         }
     }
     // update the CheckBox enability by its info
-    for (temp2=head1; temp2!=NULL; temp2=temp2->next){
+    for (temp2=head1; temp2!=nullptr; temp2=temp2->next){
         if (temp2->box_state == false){
             temp2->box->setCheckState(Qt::Unchecked);
             temp2->edit->setEnabled(false);
@@ -345,17 +354,21 @@ void BillEditDialog::adjustToBillData()
     connectingCheckBox(true, head1);
 
     // record the owed info to the CheckBoxList
-    for (temp1=object_bill->OwedHeader; temp1!=NULL; temp1=temp1->next){
-        for (temp2=head2, temp3=account->head; temp3!=NULL; temp2=temp2->next, temp3=temp3->next){
+    for (temp1=object_bill->OwedHeader; temp1!=nullptr; temp1=temp1->next){
+        for (temp2=head2, temp3=account->head; temp3!=nullptr; temp3=temp3->next){
+            if (temp3->isFreezed)       continue;
+
             if (temp3->Number == temp1->People){
                 temp2->box_state = true;
                 temp2->edit->setText(QString::number(temp1->Money));
                 break;
             }
+
+            temp2=temp2->next;
         }
     }
     // update the CheckBox enability by its info
-    for (temp2=head2; temp2!=NULL; temp2=temp2->next){
+    for (temp2=head2; temp2!=nullptr; temp2=temp2->next){
         if (temp2->box_state == false){
             temp2->box->setCheckState(Qt::Unchecked);
             temp2->edit->setEnabled(false);
@@ -371,10 +384,10 @@ void BillEditDialog::adjustToBillData()
     if (object_bill->Independent == true){
 
         // get the total number of the sub-bills
-        for (count=0, temp5=object_bill->pSubBill; temp5!=NULL; count++, temp5=temp5->pSubBill);
+        for (count=0, temp5=object_bill->pSubBill; temp5!=nullptr; count++, temp5=temp5->pSubBill);
         t1->setRowCount(count);
 
-        for (m1=0, temp5=object_bill->pSubBill; temp5!=NULL; m1++, temp5=temp5->next){
+        for (m1=0, temp5=object_bill->pSubBill; temp5!=nullptr; m1++, temp5=temp5->next){
             // update the bill number
             it = new QTableWidgetItem;
             it->setText(QString::number(temp5->Number));
@@ -415,11 +428,11 @@ void BillEditDialog::connectingCheckBox(bool command, CheckBoxList *head)
     CheckBoxList *temp1;
 
     if (command == true){
-        for (temp1=head; temp1!=NULL; temp1=temp1->next)
+        for (temp1=head; temp1!=nullptr; temp1=temp1->next)
             connect(temp1->box, &QCheckBox::stateChanged, this, &BillEditDialog::slotCheckBox);
     }
     if (command == false){
-        for (temp1=head; temp1!=NULL; temp1=temp1->next)
+        for (temp1=head; temp1!=nullptr; temp1=temp1->next)
             disconnect(temp1->box, &QCheckBox::stateChanged, this, &BillEditDialog::slotCheckBox);
     }
 }
@@ -431,19 +444,18 @@ void BillEditDialog::clearTable()
 
     for (m1=0; m1<t1->rowCount(); m1++)
         for (m2=0; m2<t1->columnCount(); m2++){
-//            qDebug() << "Bitch";
-            if (t1->item(m1, m2) != NULL)   delete t1->item(m1, m2);
+            if (t1->item(m1, m2) != nullptr)   delete t1->item(m1, m2);
         }
     t1->setRowCount(0);
 }
 
 
-float BillEditDialog::calculateRemained()
+double BillEditDialog::calculateRemained()
 {
-    float    temp1;
+    double   temp1;
     OneBill *temp2;
 
-    for (temp1=e4.text().toFloat(), temp2=object_bill->pSubBill; temp2!=NULL; temp2=temp2->pSubBill)
+    for (temp1=e4.text().toDouble(), temp2=object_bill->pSubBill; temp2!=nullptr; temp2=temp2->pSubBill)
         temp1 = temp1 - temp2->Money;
 
     return temp1;
@@ -465,26 +477,27 @@ void BillEditDialog::addSubBill()
     OneBill         *tail;
 
     // find the tail of the sub- bills
-    for (tail=object_bill; tail->pSubBill!=NULL; tail=tail->pSubBill);
+    for (tail=object_bill; tail->pSubBill!=nullptr; tail=tail->pSubBill);
 
     // make a new and blank sub-bill
     temp1                = new OneBill;
 
     // set the sub-bill number
-    if (tail->pObjBill == NULL)     temp1->Number = tail->Number*100 + 1;
-    else                            temp1->Number = tail->Number     + 1;
+    if (tail->pObjBill == nullptr)     temp1->Number = tail->Number*100 + 1;
+    else                               temp1->Number = tail->Number     + 1;
     // set the rest basic info
     temp1->Time          = e2.text().toInt();
     temp1->Item          = "";
     temp1->Money         = 0.0;
     temp1->Independent   = false;
+    temp1->enable        = object_bill->enable;
     // initialize the pointers
-    temp1->PaidHeader    = NULL;
-    temp1->OwedHeader    = NULL;
-    temp1->pSubBill      = NULL;
-    temp1->pObjBill      = NULL;
-    temp1->prev          = NULL;
-    temp1->next          = NULL;
+    temp1->PaidHeader    = nullptr;
+    temp1->OwedHeader    = nullptr;
+    temp1->pSubBill      = nullptr;
+    temp1->pObjBill      = nullptr;
+    temp1->prev          = nullptr;
+    temp1->next          = nullptr;
 
     // create a new dialog for modifying the new sub-bill
     temp2 = new BillEditDialog(temp1, account, current_bill);
@@ -510,9 +523,9 @@ void BillEditDialog::updateTable()
 
 
     clearTable();
-    for (m1=0, temp1=object_bill->pSubBill; temp1!=NULL; m1++, temp1=temp1->pSubBill);
+    for (m1=0, temp1=object_bill->pSubBill; temp1!=nullptr; m1++, temp1=temp1->pSubBill);
     t1->setRowCount(m1);
-    for (m1=0, temp1=object_bill->pSubBill; temp1!=NULL; m1++, temp1=temp1->pSubBill){
+    for (m1=0, temp1=object_bill->pSubBill; temp1!=nullptr; m1++, temp1=temp1->pSubBill){
 //        qDebug() << current_bill->FindByNumber(temp1->BillNO);
         it = new QTableWidgetItem;
         t1->setItem(m1, 0, it);
@@ -550,7 +563,7 @@ bool BillEditDialog::checkPaid()
     else{
         total =  e4.text().toFloat();;
 
-        for (sum = 0.0, temp1=head1; temp1!=NULL; temp1=temp1->next){
+        for (sum = 0.0, temp1=head1; temp1!=nullptr; temp1=temp1->next){
             if (temp1->box_state == true){
                 sum += temp1->edit->text().toFloat();
             }
@@ -564,21 +577,21 @@ bool BillEditDialog::checkPaid()
 
 bool BillEditDialog::checkOwed()
 {
-    float        total, sum;
+    double        total, sum;
     CheckBoxList *temp1;
 
     if (object_bill->Independent == true){
         total = calculateRemained();
     }
     else{
-        total = e4.text().toFloat();
+        total = e4.text().toDouble();
     }
 
 
-    for (sum = 0.0, temp1=head2; temp1!=NULL; temp1=temp1->next){
+    for (sum = 0.0, temp1=head2; temp1!=nullptr; temp1=temp1->next){
 //        qDebug() << temp1->money;
         if (temp1->box_state == true){
-            sum += temp1->edit->text().toFloat();
+            sum += temp1->edit->text().toDouble();
         }
     }
     if (int((sum-total)*100) == 0)          return true;
@@ -592,7 +605,7 @@ void BillEditDialog::changeSubBill()
     BillEditDialog  *temp2;
     int              m1, row;
 
-    if (object_bill->pSubBill != NULL){
+    if (object_bill->pSubBill != nullptr){
         // find the currently selected sub- bills
         row = t1->currentIndex().row();
         for (m1=0, original=object_bill->pSubBill; m1<row; m1++, original=original->pSubBill);
@@ -624,7 +637,7 @@ void BillEditDialog::deleteSubBill()
     OneBill         *original;
     int              m1, row;
 
-    if (object_bill->pSubBill != NULL){
+    if (object_bill->pSubBill != nullptr){
         // find the currently selected sub- bills
         row = t1->currentIndex().row();
         for (m1=0, original=object_bill->pSubBill; m1<row; m1++, original=original->pSubBill);
@@ -637,6 +650,39 @@ void BillEditDialog::deleteSubBill()
     }
 }
 
+
+void BillEditDialog::defaultCalculate(double total, CheckBoxList *targetStart) {
+
+    int remainedPeopleNumber=0, m1;
+    double option1, option2;
+    CheckBoxList *temp1;
+
+    for (temp1=targetStart; temp1!=nullptr; temp1=temp1->next)
+        if (temp1->box->isChecked()) {
+            if (int(temp1->edit->text().toDouble()*100)==0)     remainedPeopleNumber += 1;
+            else    total -= temp1->edit->text().toDouble();
+        }
+    option1 = double(int(total/remainedPeopleNumber*100))/100;
+    option2 = total - option1 * (remainedPeopleNumber-1);
+
+    for (m1=0, temp1=targetStart; temp1!=nullptr; temp1=temp1->next)
+        if ((temp1->box->isChecked())&&(int(temp1->edit->text().toDouble()*100)==0)) {
+            if (m1==(remainedPeopleNumber-1))       temp1->edit->setText(QString::number(option2));
+            else                                    temp1->edit->setText(QString::number(option1));
+            m1++;
+        }
+}
+
+
+void BillEditDialog::paidDefault() {
+    defaultCalculate(e4.text().toDouble(), head1);
+}
+
+
+void BillEditDialog::owedDefault() {
+    if (object_bill->Independent == false)  defaultCalculate(e4.text().toDouble(), head2);
+    else                                    defaultCalculate(e6.text().toDouble(), head2);
+}
 
 
 

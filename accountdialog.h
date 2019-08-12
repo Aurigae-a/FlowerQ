@@ -14,11 +14,9 @@ class AccountDialog : public QDialog
     Q_OBJECT
 
 public:
-    QLabel       l1,   l2;
     QTableWidget *t1;
     QPushButton  b1,   b2,   b3,   b4,   b5;
     QGridLayout  *ly1;
-    QString      receiveTemp1;
 
     Account          *current_account;
     AddAccountDialog *dlg;
@@ -29,11 +27,12 @@ public:
     void DeleteExec();
     void ChangeExec();
     void UpdateTable();
-    void receiveFcn1(QString);
+    void initializeWindow();
 
     void (AddAccountDialog::*addSignal) (QString);
 
     AccountDialog(QString);
+    AccountDialog(Account*);
     ~AccountDialog();
 
 };

@@ -5,7 +5,7 @@
 
 struct Divider{
     int      People;
-    float    Money;
+    double   Money;
     Divider *next;
 };
 /*
@@ -18,10 +18,11 @@ struct OneBill{
     int             Number;
     int             Time;
     QString         Item;
-    float           Money;
+    double          Money;
     Divider         *PaidHeader;
     Divider         *OwedHeader;
     bool            Independent;
+    bool            enable;
     OneBill         *pSubBill;
     OneBill         *pObjBill;
     OneBill         *prev;
@@ -34,20 +35,22 @@ class Bill
 
 public:
     OneBill *head, *tail;
-    QString objective_saving_path, subjective_saving_path;
+    QString savingPath, obName, sbName;
 
-    void readFromFile(QString);
-    void saveToFile(QString, QString);
+    int readFromFile(QString);
+    int saveToFile(QString, QString, QString);
     void deleteIndependentBill(int, OneBill*);
     void deleteSubBill(int, OneBill*);
     void replaceIndependentBill(OneBill*, OneBill*);
     void replaceSubBill(OneBill*, OneBill*);
     void copyDivider(Divider*&, Divider*&);
+    void deleteAll();
     OneBill* findByNumber(int);
     OneBill* copyIndependentBill(OneBill*);
     OneBill* copySubBill(OneBill*);
+    int loadData(QString);
 
-    Bill(QString, QString);
+    Bill();
     ~Bill();
 };
 
